@@ -12,3 +12,156 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Users {
+  id             Int               @id @default(autoincrement())
+  username       String            @unique
+  name           String
+  email          String            @unique
+  password       String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  Tasks          Tasks[]
+  Subtasks       Subtasks[]
+  Assignee       TaskAssignments[] @relation("Assignee")
+  assignedByUser TaskAssignments[] @relation("AssignedBy")
+  TaskComments   TaskComments[]
+  Projects       Projects[]
+  ProjectMembers ProjectMembers[]
+}
+
+model Tasks {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TaskStatus   @default(open)
+  due_date    DateTime?
+  priority    TaskPriority @default(medium)
+  tags        String[]     @default([]) // Array of
+  createdBy   Int
+  projectsId  Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user            Users             @relation(fields: [createdBy], references: [id])
+  Subtasks        Subtasks[]
+  TaskAssignments TaskAssignments[]
+  TaskAttachments TaskAttachments[]
+  TaskComments    TaskComments[]
+  Projects        Projects          @relation(fields: [projectsId], references: [id])
+}
+
+model Subtasks {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  status      TaskStatus   @default(open)
+  due_date    DateTime?
+  priority    TaskPriority @default(medium)
+  tags        String[]     @default([]) // Array of
+  createdBy   Int
+  taskId      Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user            Users             @relation(fields: [createdBy], references: [id])
+  task            Tasks             @relation(fields: [taskId], references: [id])
+  TaskAssignments TaskAssignments[]
+  TaskAttachments TaskAttachments[]
+  TaskComments    TaskComments[]
+}
+
+model TaskAssignments {
+  id         Int      @id @default(autoincrement())
+  taskId     Int?
+  subtaskId  Int?
+  userId     Int
+  assignedBy Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  task           Tasks?    @relation(fields: [taskId], references: [id])
+  subtask        Subtasks? @relation(fields: [subtaskId], references: [id])
+  user           Users     @relation("Assignee", fields: [userId], references: [id])
+  assignedByUser Users     @relation("AssignedBy", fields: [assignedBy], references: [id])
+}
+
+model TaskComments {
+  id        Int      @id @default(autoincrement())
+  taskId    Int?
+  subtaskId Int?
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task    Tasks?    @relation(fields: [taskId], references: [id])
+  subtask Subtasks? @relation(fields: [subtaskId], references: [id])
+  user    Users     @relation(fields: [userId], references: [id])
+}
+
+model Projects {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdBy   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user           Users            @relation(fields: [createdBy], references: [id])
+  Tasks          Tasks[]
+  ProjectMembers ProjectMembers[]
+}
+
+model ProjectMembers {
+  id        Int         @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  role      ProjectRole @default(member)
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  project Projects @relation(fields: [projectId], references: [id])
+  user    Users    @relation(fields: [userId], references: [id])
+}
+
+model TaskAttachments {
+  id          Int      @id @default(autoincrement())
+  taskId      Int?
+  subtaskId   Int?
+  title       String?
+  description String?
+  fileType    String?
+  url         String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  task    Tasks?    @relation(fields: [taskId], references: [id])
+  subtask Subtasks? @relation(fields: [subtaskId], references: [id])
+}
+
+enum TaskStatus {
+  open
+  reopened
+  closed
+  cancelled
+  pending
+  todo
+  in_progress
+  ready_to_test
+  completed
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum ProjectRole {
+  owner
+  member
+  viewer
+}
