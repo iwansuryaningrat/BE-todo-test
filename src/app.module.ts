@@ -1,10 +1,25 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
+import { JwtModule } from "@nestjs/jwt";
 import { AppService } from './app.service';
+import { AppController } from './app.controller';
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
-  imports: [],
+  imports: [
+    JwtModule.registerAsync({
+      useFactory: (config: ConfigService) => ({
+        global: true,
+        secret: config.get<string>("JWT_SECRET"),
+        signOptions: { expiresIn: config.get("JWT_EXPIRES") },
+      }),
+      inject: [ConfigService],
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ".env",
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
