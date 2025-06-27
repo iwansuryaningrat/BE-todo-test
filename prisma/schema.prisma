@@ -18,6 +18,7 @@ model Users {
   username       String            @unique
   name           String
   email          String            @unique
+  picture        String            @default("https://res.cloudinary.com/sningratt/image/upload/v1706281179/default.png")
   password       String
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
