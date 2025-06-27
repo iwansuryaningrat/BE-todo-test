@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from "@nestjs/jwt";
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import { FileUploader } from './utils/fileUploader.util';
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
@@ -19,7 +20,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
       envFilePath: ".env",
     }),
   ],
-  controllers: [AppController],
+  controllers: [
+    FileUploader,
+    AppController,
+  ],
   providers: [AppService],
 })
 export class AppModule { }
