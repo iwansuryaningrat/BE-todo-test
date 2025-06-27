@@ -21,9 +21,11 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     }),
   ],
   controllers: [
-    FileUploader,
     AppController,
   ],
-  providers: [AppService],
+  providers: [
+    AppService,
+    FileUploader,
+  ],
 })
 export class AppModule { }

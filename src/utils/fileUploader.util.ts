@@ -20,11 +20,19 @@ export class FileUploader {
 
   async uploadFile(file: Express.Multer.File): Promise<any> {
     try {
-      const { filename } = file;
+      const { originalname } = file;
+      const filename = originalname.replace(/\s+/g, '-').toLowerCase();
       const fileBuffer = file.buffer;
       let res: any = await this.uploadFileToCloudinary(fileBuffer, filename);
 
-      return res?.secure_url;
+      return {
+        filename,
+        url: res?.secure_url,
+        originalname: originalname,
+        size: file.size,
+        mimetype: file.mimetype,
+        createdAt: new Date(),
+      };
     } catch (error) {
       this.logger.error(this.uploadFile.name);
       throw new HttpException(error?.response ?? error?.message ?? error, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
@@ -33,6 +41,8 @@ export class FileUploader {
 
   async uploadFileToCloudinary(fileBuffer: Buffer, fileName: string,): Promise<any> {
     try {
+      // remove file extension from fileName
+      fileName = fileName.split('.').slice(0, -1).join('.');
       const uploadResult = await new Promise((resolve) => {
         cloudinary.uploader.upload_stream(
           {
