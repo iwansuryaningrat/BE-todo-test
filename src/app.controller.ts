@@ -1,8 +1,8 @@
 import { BadRequestException, Controller, Get, Inject, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import { imageAndVideoAndPDFFilter, limitImageAndVideoAndPDFUpload } from './utils/validators/file.validator';
-import { FileUploader } from './utils/fileUploader.util';
+import { imageAndVideoAndPDFFilter, limitImageAndVideoAndPDFUpload } from './libs/utils/validators/file.validator';
+import { FileUploader } from './libs/utils/fileUploader.util';
 
 @Controller()
 export class AppController {

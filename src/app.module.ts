@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from "@nestjs/jwt";
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
-import { FileUploader } from './utils/fileUploader.util';
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { FileUploader } from './libs/utils/fileUploader.util';
+import { PrismaService } from './libs/database/prisma.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
   providers: [
     AppService,
     FileUploader,
+    PrismaService,
   ],
 })
 export class AppModule { }
