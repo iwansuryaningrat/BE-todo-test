@@ -4,12 +4,14 @@ import { IUserData } from "../interfaces";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../database/prisma.service";
 import { Injectable, Inject, UnauthorizedException } from "@nestjs/common";
+import { UserService } from "src/users/user.service";
 
 @Injectable()
 export class AuthHelper {
   constructor(
     @Inject(PrismaService) private readonly prismaService: PrismaService,
     @Inject(ConfigService) private readonly configService: ConfigService,
+    @Inject(UserService) private readonly userService: UserService,
     private jwtService: JwtService,
   ) { }
 
@@ -20,10 +22,9 @@ export class AuthHelper {
   }
 
   // Get User by User ID we get from decode()
-  public async validateUser(decoded: any): Promise<any> {
-    const user = await this.prismaService.users.findUnique({
-      where: { id: decoded.id },
-    });
+  public async validateUser(decoded: any): Promise<IUserData> {
+    const user = await this.userService.getUserById(decoded.id);
+    if (!user) throw new UnauthorizedException("User Unauthorized!");
 
     return user;
   }
