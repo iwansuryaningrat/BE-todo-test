@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from "@nestjs/jwt";
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
+import { AuthHelper } from './libs/helpers';
+import { AuthService } from './auth/auth.service';
+import { UserService } from './users/user.service';
+import { AuthController } from './auth/auth.controller';
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { FileUploader } from './libs/utils/fileUploader.util';
 import { PrismaService } from './libs/database/prisma.service';
@@ -22,10 +24,12 @@ import { PrismaService } from './libs/database/prisma.service';
     }),
   ],
   controllers: [
-    AppController,
+    AuthController,
   ],
   providers: [
-    AppService,
+    UserService,
+    AuthService,
+    AuthHelper,
     FileUploader,
     PrismaService,
   ],
