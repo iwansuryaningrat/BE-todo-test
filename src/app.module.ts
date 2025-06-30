@@ -7,6 +7,7 @@ import { CronUtil, FileUploader } from './libs/utils';
 import { AuthController } from './auth/auth.controller';
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PrismaService } from './libs/database/prisma.service';
+import { UserController } from './users/user.controller';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PrismaService } from './libs/database/prisma.service';
   ],
   controllers: [
     AuthController,
+    UserController,
   ],
   providers: [
     CronUtil,
