@@ -23,7 +23,6 @@ model Users {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   Tasks          Tasks[]
-  Subtasks       Subtasks[]
   Assignee       TaskAssignments[] @relation("Assignee")
   assignedByUser TaskAssignments[] @relation("AssignedBy")
   TaskComments   TaskComments[]
@@ -34,6 +33,8 @@ model Users {
 
 model Tasks {
   id          Int          @id @default(autoincrement())
+  taskId      Int?
+  projectsId  Int?
   title       String
   description String?
   status      TaskStatus   @default(open)
@@ -41,65 +42,41 @@ model Tasks {
   priority    TaskPriority @default(medium)
   tags        String[]     @default([]) // Array of
   createdBy   Int
-  projectsId  Int
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   user            Users             @relation(fields: [createdBy], references: [id])
-  Subtasks        Subtasks[]
+  parentTask      Tasks?            @relation("parentTask", fields: [taskId], references: [id])
   TaskAssignments TaskAssignments[]
   TaskAttachments TaskAttachments[]
   TaskComments    TaskComments[]
-  Projects        Projects          @relation(fields: [projectsId], references: [id])
-}
-
-model Subtasks {
-  id          Int          @id @default(autoincrement())
-  title       String
-  description String?
-  status      TaskStatus   @default(open)
-  due_date    DateTime?
-  priority    TaskPriority @default(medium)
-  tags        String[]     @default([]) // Array of
-  createdBy   Int
-  taskId      Int
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  user            Users             @relation(fields: [createdBy], references: [id])
-  task            Tasks             @relation(fields: [taskId], references: [id])
-  TaskAssignments TaskAssignments[]
-  TaskAttachments TaskAttachments[]
-  TaskComments    TaskComments[]
+  Projects        Projects?         @relation(fields: [projectsId], references: [id])
+  subtask         Tasks[]           @relation("parentTask")
 }
 
 model TaskAssignments {
   id         Int      @id @default(autoincrement())
   taskId     Int?
-  subtaskId  Int?
   userId     Int
   assignedBy Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  task           Tasks?    @relation(fields: [taskId], references: [id])
-  subtask        Subtasks? @relation(fields: [subtaskId], references: [id])
-  user           Users     @relation("Assignee", fields: [userId], references: [id])
-  assignedByUser Users     @relation("AssignedBy", fields: [assignedBy], references: [id])
+  task           Tasks? @relation(fields: [taskId], references: [id])
+  user           Users  @relation("Assignee", fields: [userId], references: [id])
+  assignedByUser Users  @relation("AssignedBy", fields: [assignedBy], references: [id])
 }
 
 model TaskComments {
   id        Int      @id @default(autoincrement())
   taskId    Int?
-  subtaskId Int?
   userId    Int
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task    Tasks?    @relation(fields: [taskId], references: [id])
-  subtask Subtasks? @relation(fields: [subtaskId], references: [id])
-  user    Users     @relation(fields: [userId], references: [id])
+  task Tasks? @relation(fields: [taskId], references: [id])
+  user Users  @relation(fields: [userId], references: [id])
 }
 
 model Projects {
@@ -131,7 +108,6 @@ model ProjectMembers {
 model TaskAttachments {
   id          Int      @id @default(autoincrement())
   taskId      Int?
-  subtaskId   Int?
   title       String?
   description String?
   fileType    String?
@@ -139,8 +115,7 @@ model TaskAttachments {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  task    Tasks?    @relation(fields: [taskId], references: [id])
-  subtask Subtasks? @relation(fields: [subtaskId], references: [id])
+  task Tasks? @relation(fields: [taskId], references: [id])
 }
 
 model RefreshToken {
