@@ -1,9 +1,9 @@
 import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/libs/database/prisma.service";
+import { UserService } from "src/users/user.service";
 import { IUserData } from "src/libs/interfaces";
 import { AuthHelper } from "src/libs/helpers";
 import { LoginDTO } from "./auth.dto";
-import { UserService } from "src/users/user.service";
 
 @Injectable()
 export class AuthService {
@@ -76,6 +76,25 @@ export class AuthService {
       }
     } catch (error) {
       this.logger.error(this.refreshToken.name, error?.message);
+      throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async logout(userId: number) {
+    try {
+      const refreshToken = await this.prismaService.refreshToken.findFirst({
+        where: { userId, isActive: true }
+      });
+      if (!refreshToken) throw new BadRequestException("Refresh token is invalid!");
+
+      await this.prismaService.refreshToken.update({
+        where: { id: refreshToken.id },
+        data: { isActive: false, expiredAt: null }
+      });
+
+      return { message: "User logged out successfully!" };
+    } catch (error) {
+      this.logger.error(this.logout.name, error?.message);
       throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

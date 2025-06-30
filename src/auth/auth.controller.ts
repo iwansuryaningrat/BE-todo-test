@@ -1,5 +1,6 @@
 import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { Body, Controller, Inject, Post } from "@nestjs/common";
+import { Body, Controller, Inject, Post, Request, UseGuards } from "@nestjs/common";
+import { AuthenticationGuard } from "src/libs/auth/authentication.guard";
 import { loginResponseExample } from "./response-example";
 import { AuthService } from "./auth.service";
 import { LoginDTO } from "./auth.dto";
@@ -136,5 +137,39 @@ export class AuthController {
   })
   async refreshToken(@Body() data: { refreshToken: string }) {
     return await this.authService.refreshToken(data.refreshToken);
+  }
+
+  @Post('logout')
+  @UseGuards(AuthenticationGuard)
+  @ApiOperation({
+    summary: 'Logout User',
+    description: 'Logout User',
+  })
+  @ApiOkResponse({
+    description: "Success Response",
+    example: {
+      "message": "User logged out successfully!"
+    },
+    schema: {
+      properties: {
+        message: { type: 'string' },
+      }
+    }
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error Response',
+    example: {
+      "statusCode": 500,
+      "message": "Internal Server Error!"
+    },
+    schema: {
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+      }
+    }
+  })
+  async logout(@Request() req: any) {
+    return await this.authService.logout(req?.user?.id);
   }
 }

@@ -35,6 +35,7 @@ export class AuthHelper {
     userId: number,
     data: IUserData,
   ) {
+    const secret = this.configService.get("JWT_SECRET");
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
@@ -42,7 +43,7 @@ export class AuthHelper {
           ...data,
         },
         {
-          secret: this.configService.get("JWT_SECRET"),
+          secret,
           expiresIn: this.configService.get("JWT_EXPIRES"),
         },
       ),
@@ -52,7 +53,7 @@ export class AuthHelper {
           ...data,
         },
         {
-          secret: this.configService.get("JWT_SECRET"),
+          secret,
           expiresIn: this.configService.get("REFRESH_TOKEN_EXPIRES"),
         },
       ),
