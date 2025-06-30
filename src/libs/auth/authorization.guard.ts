@@ -1,7 +1,7 @@
 import { Observable } from "rxjs";
 import { Reflector } from "@nestjs/core";
 import { ROLES_KEY } from "../decorators/roles.decorator";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -16,7 +16,8 @@ export class AuthorizationGuard implements CanActivate {
       context.getHandler(),
     ]);
     if (!requiredRoles.length) return true;
-    const userRole = request.user.role;
+    const userRole = request?.user?.role;
+    if (!userRole) throw new UnauthorizedException("You need to join a project first!");
     if (!requiredRoles.includes(userRole)) return false;
     return true;
   }
