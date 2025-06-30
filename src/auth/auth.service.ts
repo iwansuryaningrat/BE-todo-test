@@ -3,7 +3,7 @@ import { PrismaService } from "src/libs/database/prisma.service";
 import { UserService } from "src/users/user.service";
 import { IUserData } from "src/libs/interfaces";
 import { AuthHelper } from "src/libs/helpers";
-import { LoginDTO } from "./auth.dto";
+import { LoginDTO, SignUpDTO } from "./auth.dto";
 
 @Injectable()
 export class AuthService {
@@ -95,6 +95,26 @@ export class AuthService {
       return { message: "User logged out successfully!" };
     } catch (error) {
       this.logger.error(this.logout.name, error?.message);
+      throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async signup(data: SignUpDTO) {
+    try {
+      const existingEmail = await this.prismaService.users.findUnique({ where: { email: data.email } });
+      if (existingEmail) throw new BadRequestException("Email already exists!");
+
+      const existingUsername = await this.prismaService.users.findUnique({ where: { username: data.username } });
+      if (existingUsername) throw new BadRequestException("Username already exists!");
+
+      const password = this.authHelper.encodePassword(data.password);
+      await this.prismaService.users.create({ data: { ...data, password } });
+
+      return {
+        message: "User created successfully!",
+      }
+    } catch (error) {
+      this.logger.error(this.signup.name, error?.message);
       throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

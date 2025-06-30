@@ -3,7 +3,7 @@ import { Body, Controller, Inject, Post, Request, UseGuards } from "@nestjs/comm
 import { AuthenticationGuard } from "src/libs/auth/authentication.guard";
 import { loginResponseExample } from "./response-example";
 import { AuthService } from "./auth.service";
-import { LoginDTO } from "./auth.dto";
+import { LoginDTO, RefreshTokenDTO, SignUpDTO } from "./auth.dto";
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -135,7 +135,7 @@ export class AuthController {
       }
     }
   })
-  async refreshToken(@Body() data: { refreshToken: string }) {
+  async refreshToken(@Body() data: RefreshTokenDTO) {
     return await this.authService.refreshToken(data.refreshToken);
   }
 
@@ -171,5 +171,51 @@ export class AuthController {
   })
   async logout(@Request() req: any) {
     return await this.authService.logout(req?.user?.id);
+  }
+
+  @Post('signup')
+  @ApiOperation({
+    summary: 'Signup User',
+    description: 'Signup User',
+  })
+  @ApiOkResponse({
+    description: "Success Response",
+    example: {
+      "message": "User created successfully!"
+    },
+    schema: {
+      properties: {
+        message: { type: 'string' },
+      }
+    }
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Error Response',
+    example: {
+      "statusCode": 400,
+      "message": "Email already exists!"
+    },
+    schema: {
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+      }
+    }
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error Response',
+    example: {
+      "statusCode": 500,
+      "message": "Internal Server Error!"
+    },
+    schema: {
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+      }
+    }
+  })
+  async signup(@Body() data: SignUpDTO) {
+    return await this.authService.signup(data);
   }
 }
