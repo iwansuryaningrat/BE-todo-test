@@ -6,6 +6,8 @@ import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/sw
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const port: number = Number(process.env.PORT) || 3000;
+
   app.enableCors({
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
@@ -19,7 +21,7 @@ async function bootstrap() {
     .setTitle('Task Management API')
     .setDescription('API for managing tasks, projects, and users in a task management application.')
     .setContact('Iwan Suryaningrat', 'https://iwansuryaningrat.my.id', 'iwan.suryaningrat28@gmail.com')
-    .addServer('localhost:3000', "Local Server")
+    .addServer(`http://localhost:${port}`, "Local Server")
     .setVersion('1.0')
     .setLicense('MIT', 'https://github.com/nestjs/nest/blob/master/LICENSE')
     .addBearerAuth({
@@ -50,7 +52,6 @@ async function bootstrap() {
 
   SwaggerModule.setup('docs', app, document, setupOptions);
 
-  const port: number = Number(process.env.PORT) || 3000;
   await app.listen(port);
 }
 bootstrap();
