@@ -3,8 +3,8 @@ export interface IUserData {
   name: string;
   username: string;
   picture: string;
-  role: string;
   email: string;
-  project: string;
-  projectId: number;
+  role: string | null;
+  project: string | null;
+  projectId: number | null;
 }
