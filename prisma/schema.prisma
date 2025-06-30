@@ -29,6 +29,7 @@ model Users {
   TaskComments   TaskComments[]
   Projects       Projects[]
   ProjectMembers ProjectMembers[]
+  RefreshToken   RefreshToken?
 }
 
 model Tasks {
@@ -140,6 +141,19 @@ model TaskAttachments {
 
   task    Tasks?    @relation(fields: [taskId], references: [id])
   subtask Subtasks? @relation(fields: [subtaskId], references: [id])
+}
+
+model RefreshToken {
+  id           Int       @id @default(autoincrement())
+  refreshToken String
+  accessToken  String
+  userId       Int       @unique
+  isActive     Boolean   @default(true)
+  expiredAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user Users @relation(fields: [userId], references: [id])
 }
 
 enum TaskStatus {

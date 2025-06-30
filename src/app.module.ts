@@ -3,9 +3,9 @@ import { JwtModule } from "@nestjs/jwt";
 import { AuthHelper } from './libs/helpers';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './users/user.service';
+import { CronUtil, FileUploader } from './libs/utils';
 import { AuthController } from './auth/auth.controller';
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { FileUploader } from './libs/utils/fileUploader.util';
 import { PrismaService } from './libs/database/prisma.service';
 
 @Module({
@@ -27,6 +27,7 @@ import { PrismaService } from './libs/database/prisma.service';
     AuthController,
   ],
   providers: [
+    CronUtil,
     UserService,
     AuthService,
     AuthHelper,

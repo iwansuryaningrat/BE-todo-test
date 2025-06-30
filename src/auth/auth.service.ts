@@ -3,11 +3,13 @@ import { PrismaService } from "src/libs/database/prisma.service";
 import { IUserData } from "src/libs/interfaces";
 import { AuthHelper } from "src/libs/helpers";
 import { LoginDTO } from "./auth.dto";
+import { UserService } from "src/users/user.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(PrismaService) private readonly prismaService: PrismaService,
+    @Inject(UserService) private readonly userService: UserService,
     @Inject(AuthHelper) private readonly authHelper: AuthHelper
   ) { }
 
@@ -18,17 +20,11 @@ export class AuthService {
       const { email, password } = data;
 
       const user = await this.prismaService.users.findUnique({
-        where: {
-          email
-        },
+        where: { email },
         include: {
           ProjectMembers: {
-            where: {
-              isActive: true
-            },
-            include: {
-              project: true
-            }
+            where: { isActive: true },
+            include: { project: true }
           }
         }
       });
@@ -55,6 +51,31 @@ export class AuthService {
       };
     } catch (error) {
       this.logger.error(this.login.name, error?.message);
+      throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async refreshToken(refreshToken: string) {
+    try {
+      const activeRefreshToken = await this.prismaService.refreshToken.findFirst({
+        where: {
+          refreshToken,
+          isActive: true
+        }
+      })
+      if (!activeRefreshToken) throw new BadRequestException("Refresh token is invalid!")
+
+      const user = await this.userService.getUserById(activeRefreshToken.userId);
+
+      const { accessToken, refreshToken: newRefreshToken } = await this.authHelper.generateTokens(user.id, user);
+
+      return {
+        accessToken,
+        refreshToken: newRefreshToken,
+        user
+      }
+    } catch (error) {
+      this.logger.error(this.refreshToken.name, error?.message);
       throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

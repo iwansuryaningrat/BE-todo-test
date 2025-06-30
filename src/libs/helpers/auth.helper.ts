@@ -1,10 +1,11 @@
 import * as bcrypt from "bcryptjs";
 import { JwtService } from "@nestjs/jwt";
+import * as moment from 'moment-timezone';
 import { IUserData } from "../interfaces";
 import { ConfigService } from "@nestjs/config";
+import { UserService } from "src/users/user.service";
 import { PrismaService } from "../database/prisma.service";
 import { Injectable, Inject, UnauthorizedException } from "@nestjs/common";
-import { UserService } from "src/users/user.service";
 
 @Injectable()
 export class AuthHelper {
@@ -56,6 +57,24 @@ export class AuthHelper {
         },
       ),
     ]);
+
+    const expiredAt = moment(new Date()).add(3, 'days').format();
+    await this.prismaService.refreshToken.upsert({
+      where: { userId },
+      update: {
+        accessToken,
+        refreshToken,
+        isActive: true,
+        expiredAt,
+      },
+      create: {
+        userId,
+        accessToken,
+        refreshToken,
+        expiredAt,
+        isActive: true,
+      },
+    });
 
     return {
       accessToken,

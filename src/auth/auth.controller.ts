@@ -80,4 +80,61 @@ export class AuthController {
   async login(@Body() data: LoginDTO) {
     return await this.authService.login(data);
   }
+
+  @Post('refresh-token')
+  @ApiOperation({
+    summary: 'Refresh Token',
+    description: 'Refresh Token',
+  })
+  @ApiOkResponse({
+    description: "Success Response",
+    example: loginResponseExample,
+    schema: {
+      properties: {
+        accessToken: { type: 'string' },
+        refreshToken: { type: 'string' },
+        user: {
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+            username: { type: 'string' },
+            role: { type: 'string' },
+            project: { type: 'string' },
+            projectId: { type: 'number' }
+          }
+        }
+      }
+    }
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad Request Error Response',
+    example: {
+      "statusCode": 400,
+      "message": "Refresh token is invalid!"
+    },
+    schema: {
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+      }
+    }
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error Response',
+    example: {
+      "statusCode": 500,
+      "message": "Internal Server Error!"
+    },
+    schema: {
+      properties: {
+        statusCode: { type: 'number' },
+        message: { type: 'string' },
+      }
+    }
+  })
+  async refreshToken(@Body() data: { refreshToken: string }) {
+    return await this.authService.refreshToken(data.refreshToken);
+  }
 }

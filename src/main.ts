@@ -50,6 +50,7 @@ async function bootstrap() {
 
   SwaggerModule.setup('docs', app, document, setupOptions);
 
-  await app.listen(3000);
+  const port: number = Number(process.env.PORT) || 3000;
+  await app.listen(port);
 }
 bootstrap();
