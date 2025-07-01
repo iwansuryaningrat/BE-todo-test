@@ -1,12 +1,14 @@
 import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/libs/database/prisma.service";
+import { ChangePasswordDto, EditProfileDTO } from "./user.dto";
 import { IUserData } from "src/libs/interfaces";
-import { ChangePasswordDto } from "./user.dto";
 import { AuthHelper } from "src/libs/helpers";
+import { FileUploader } from "src/libs/utils";
 
 @Injectable()
 export class UserService {
   constructor(
+    @Inject(FileUploader) private readonly fileUploader: FileUploader,
     @Inject(PrismaService) private readonly prismaService: PrismaService,
     @Inject(forwardRef(() => AuthHelper)) private readonly authHelper: AuthHelper,
   ) { }
@@ -94,6 +96,65 @@ export class UserService {
       return { message: "Project changed successfully!" };
     } catch (error) {
       this.logger.error(this.changeActiveProject.name, error?.message);
+      throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async editProfile(userId: number, data: EditProfileDTO) {
+    try {
+      const user = await this.prismaService.users.findUnique({ where: { id: userId } });
+      if (!user) throw new NotFoundException("User not found!");
+
+      if (data.username) {
+        const existingUsername = await this.prismaService.users.findFirst({
+          where: {
+            username: data.username,
+            id: {
+              not: userId
+            }
+          }
+        });
+        if (existingUsername) throw new BadRequestException("Username already exists!");
+      }
+
+      await this.prismaService.users.update({
+        where: { id: userId },
+        data
+      })
+
+      return { message: "Profile updated successfully!" };
+    } catch (error) {
+      this.logger.error(this.editProfile.name, error?.message);
+      throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async changeProfilePicture(userId: number, file: any) {
+    try {
+      const user = await this.prismaService.users.findUnique({
+        where: {
+          id: userId
+        }
+      });
+      if (!user) throw new NotFoundException("User not found!");
+
+      const { url: pictureLink } = await this.fileUploader.uploadFile(file);
+
+      await this.prismaService.users.update({
+        where: {
+          id: userId
+        },
+        data: {
+          picture: pictureLink
+        }
+      })
+
+      const deletedPicture = user.picture.split('/').pop();
+      if (deletedPicture !== 'default.png') await this.fileUploader.deleteFromCloudinary({ fileName: deletedPicture });
+
+      return { message: "Profile picture updated successfully!" };
+    } catch (error) {
+      this.logger.error(this.changeProfilePicture.name, error?.message);
       throw new HttpException(error.message, error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

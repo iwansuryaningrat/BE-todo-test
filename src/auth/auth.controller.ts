@@ -1,9 +1,9 @@
 import { ApiBadRequestResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Body, Controller, Inject, Post, Request, UseGuards } from "@nestjs/common";
 import { AuthenticationGuard } from "src/libs/auth/authentication.guard";
+import { LoginDTO, RefreshTokenDTO, SignUpDTO } from "./auth.dto";
 import { loginResponseExample } from "./response-example";
 import { AuthService } from "./auth.service";
-import { LoginDTO, RefreshTokenDTO, SignUpDTO } from "./auth.dto";
 
 @ApiTags('Auth')
 @Controller('auth')
